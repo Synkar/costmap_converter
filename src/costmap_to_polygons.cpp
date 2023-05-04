@@ -177,21 +177,29 @@ void CostmapToPolygonsDBSMCCH::setCostmap2D(costmap_2d::Costmap2D *costmap)
 }
 
 void CostmapToPolygonsDBSMCCH::updateCostmap2D()
-{
+{     
       occupied_cells_.clear();
-      
-      if (!costmap_->getMutex())
+      if(!costmap_){
+        ROS_ERROR("Costmap not initialized yet");
+        return;
+      }
+      if(!costmap_->getCharMap()){
+        ROS_ERROR("Costmap char map not initialized yet");
+        return;
+      }
+
+      costmap_2d::Costmap2D::mutex_t* mutex = costmap_->getMutex();
+      if (!mutex)
       {
         ROS_ERROR("Cannot update costmap since the mutex pointer is null");
         return;
       }
-      
+      boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*mutex);
+
       { // get a copy of our parameters from dynamic reconfigure
         boost::mutex::scoped_lock lock(parameter_mutex_);
         parameter_ = parameter_buffered_;
       }
-      
-      costmap_2d::Costmap2D::mutex_t::scoped_lock lock(*costmap_->getMutex());
 
       // allocate neighbor lookup
       int cells_x = int(costmap_->getSizeInMetersX() / parameter_.max_distance_) + 1;
