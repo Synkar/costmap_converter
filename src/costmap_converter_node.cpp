@@ -127,16 +127,17 @@ public:
       // convert
       converter_->updateCostmap2D();
       converter_->compute();
-      costmap_converter::ObstacleArrayConstPtr obstacles = converter_->getObstacles();
-
-      if (!obstacles)
-        return;
+      costmap_converter::ObstacleArrayMsg obstacles = (*converter_->getObstacles());
+      obstacles.header.frame_id = frame_id_;
+      obstacles.header.stamp = ros::Time::now();
+      // if (!obstacles)
+      //   return;
 
       obstacle_pub_.publish(obstacles);
 
       frame_id_ = msg->header.frame_id;
 
-      publishAsMarker(frame_id_, *obstacles, marker_pub_);
+      publishAsMarker(frame_id_, obstacles, marker_pub_);
   }
 
   void costmapUpdateCallback(const map_msgs::OccupancyGridUpdateConstPtr& update)
@@ -146,7 +147,7 @@ public:
     {
       for (unsigned int x = 0; x < update->width ; ++x)
       {
-        map_.setCost(x, y, update->data[di++] >= occupied_min_value_ ? 255 : 0 );
+        map_.setCost(x+update->x, y+update->y, update->data[di++] >= occupied_min_value_ ? 255 : 0 );
       }
     }
 
@@ -154,14 +155,15 @@ public:
     // TODO(roesmann): currently, the converter updates the complete costmap and not the part which is updated in this callback
     converter_->updateCostmap2D();
     converter_->compute();
-    costmap_converter::ObstacleArrayConstPtr obstacles = converter_->getObstacles();
-
-    if (!obstacles)
-      return;
+    costmap_converter::ObstacleArrayMsg obstacles = (*converter_->getObstacles());
+    obstacles.header.frame_id = frame_id_;
+    obstacles.header.stamp = ros::Time::now();
+    // if (!obstacles)
+    //   return;
 
     obstacle_pub_.publish(obstacles);
 
-    publishAsMarker(frame_id_, *obstacles, marker_pub_);
+    publishAsMarker(frame_id_, obstacles, marker_pub_);
   }
 
   void publishAsMarker(const std::string& frame_id, const std::vector<geometry_msgs::PolygonStamped>& polygonStamped, ros::Publisher& marker_pub)
