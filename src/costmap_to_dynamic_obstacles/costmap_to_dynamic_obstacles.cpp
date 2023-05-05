@@ -125,6 +125,8 @@ void CostmapToDynamicObstacles::initialize(ros::NodeHandle nh)
   tracker_params.max_trace_length = 10;
   nh.param("max_trace_length", tracker_params.max_trace_length, tracker_params.max_trace_length);
 
+  nh.param<std::string>("global_frame", global_frame_, std::string("odom"));
+
   tracker_ = std::unique_ptr<CTracker>(new CTracker(tracker_params));
 
 
@@ -206,7 +208,7 @@ void CostmapToDynamicObstacles::compute()
   ObstacleArrayPtr obstacles(new ObstacleArrayMsg);
   // header.seq is automatically filled
   obstacles->header.stamp = ros::Time::now();
-  obstacles->header.frame_id = "/map"; //Global frame /map
+  obstacles->header.frame_id = global_frame_; //Global frame /map
 
   // For all tracked objects
   for (unsigned int i = 0; i < (unsigned int)tracker_->tracks.size(); ++i)

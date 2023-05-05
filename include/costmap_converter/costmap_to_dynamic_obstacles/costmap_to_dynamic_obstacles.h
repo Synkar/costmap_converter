@@ -181,7 +181,7 @@ private:
   ros::Subscriber odom_sub_;
   Point_t ego_vel_;
 
-  std::string odom_topic_ = "/odom";
+  std::string odom_topic_ = "/odom", global_frame_;
   bool publish_static_obstacles_ = true;
 
   dynamic_reconfigure::Server<CostmapToDynamicObstaclesConfig>*
