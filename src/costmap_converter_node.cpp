@@ -127,15 +127,20 @@ public:
       // convert
       converter_->updateCostmap2D();
       converter_->compute();
-      costmap_converter::ObstacleArrayMsg obstacles = (*converter_->getObstacles());
+
+      costmap_converter::ObstacleArrayConstPtr obstacles_ptr = converter_->getObstacles();
+      if(!obstacles_ptr)
+        return;
+      
+      frame_id_ = msg->header.frame_id;
+
+      costmap_converter::ObstacleArrayMsg obstacles;
+      obstacles.obstacles = obstacles_ptr->obstacles;
       obstacles.header.frame_id = frame_id_;
       obstacles.header.stamp = ros::Time::now();
-      // if (!obstacles)
-      //   return;
 
       obstacle_pub_.publish(obstacles);
 
-      frame_id_ = msg->header.frame_id;
 
       publishAsMarker(frame_id_, obstacles, marker_pub_);
   }
